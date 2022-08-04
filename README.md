@@ -90,3 +90,13 @@ def eater():
         print(x)
 ```
 and look what is printed and than do something useful instead of the print. The code is full of examples of all the idioms you might need. Enjoy!
+
+## Warning
+Your window environment may contain elements which technically could be moved/resized by hacktrack but you do not want it. Code tries to avoid moving these:
+```python
+   if str(name).startswith("b'Desktop'"):
+       # we are technically able to move this but do not want to
+       print("Avoided Desktop drag")
+       continue
+```
+and it works good enough for me but can be different for you.
