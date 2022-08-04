@@ -80,4 +80,13 @@ desktop_range = ((0, 3840), (0, 2160)) # x, y
 ```
 Then you can tap the trackpad (slightly less than what would make it to click) at any point and the mouse cursor will appear at the corresponding absolute position of your screen. It is a neat way to find your cursor (or in fact not to search for it but place it where you want it) but I did not like it as much as the other features.
 
-
+## Your own crazy idea
+This is why you came here, right? It is really easy. The ```@event_eater``` decorator puts your procedure among those who recieve slightly cooked trackpad events (if you ever worked with mouse moving events, this is a similar thing). Try this:
+```python
+@event_eater
+def eater():
+    while True:
+        x = (yield)
+        print(x)
+```
+and look what is printed and than do something useful instead of the print. The code is full of examples of all the idioms you might need. Enjoy!
