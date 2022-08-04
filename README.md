@@ -54,17 +54,30 @@ def three_finger_desktop_drag():
 ````
 If you want to use it, you need to match your desktop layout and the source code. It is no rocket science. My desktop is Xfce4 and I have a row of virtual desktops in a panel which appears when mouse pointer is at the lower edge of my display. When the pointer is elsewhere, the panel autohides. This part of the hacktrack source code forms the interface to my desktops:
 ```python
-    def desk_show():
-        os.system("xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 0")
-    def desk_hide(): # still shown if mouse at lower screen edge
-        os.system("xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 2")
-    def desk_left(): # like swipe-left on Mac (windows move left, our view moves right)
-        os.system("xdotool key alt+ctrl+Right")
-    def desk_right():
-        os.system("xdotool key alt+ctrl+Left")
+def desk_show():
+    os.system("xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 0")
+def desk_hide(): # still shown if mouse at lower screen edge
+    os.system("xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 2")
+def desk_left(): # like swipe-left on Mac (windows move left, our view moves right)
+    os.system("xdotool key alt+ctrl+Right")
+def desk_right():
+    os.system("xdotool key alt+ctrl+Left")
 ```
 * it changes the autohide property of ```panel-2``` to show/hide it. Your pannel can have different number.
 * it uses ```alt+ctrl+Right``` and  ```alt+ctrl+Left``` to change desktops. You may need some other keys.
 
 Also, you may use other commands than ```xfconf-query``` and ```xdotool``` to send instructions to your desktop.
+
+## Absolute pointer positioning by tap
+This one is really experimantal and is disabled in the code:
+```python
+#@event_eater
+def abs_pos_mouse_by_tap():
+```
+Remove the ```#``` to activate it. Also, unless your monitor happens to be 4K as the mine is, put the right size here:
+```python
+desktop_range = ((0, 3840), (0, 2160)) # x, y
+```
+Then you can tap the trackpad (slightly less than what would make it to click) at any point and the mouse cursor will appear at the corresponding absolute position of your screen. It is a neat way to find your cursor (or in fact not to search for it but place it where you want it) but I did not like it as much as the other features.
+
 
