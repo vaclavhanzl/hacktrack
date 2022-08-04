@@ -69,7 +69,7 @@ def desk_right():
 Also, you may use other commands than ```xfconf-query``` and ```xdotool``` to send instructions to your desktop.
 
 ## Absolute pointer positioning by tap
-This one is really experimantal and is disabled in the code:
+This one is really experimental and is disabled in the code:
 ```python
 #@event_eater
 def abs_pos_mouse_by_tap():
