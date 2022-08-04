@@ -22,3 +22,6 @@ For desktop changes, you will likely need to modify commands used in the hacktra
 
 ## TODO
 This is an alpha stage project. Some more automatic installation is certainly due.
+
+## Comparison to other projects
+I tried whatever I found before writing the tool myself, of course. Rather surprisingly, the key decision which allowed me to make this code simple and ergonomic was to NOT use library like libinput which is there to help me. Instead, I get raw trackpad events directly from the kernel. Sounds scary but is actually very easy. The problem with the (great) libinput is that it does only the things it can do well. It is not a place for experiments. If you want to be on the edge with crazy ideas, you need your experimental code PLUS a hacked version of libinput. This forked hacked libinput gets quickly unmaintained and it clashes with the libinput in your system. On the other hand, working in parallel with libinput (and anything like libinput-gestures on top of it) is really hassle free.
