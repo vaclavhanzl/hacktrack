@@ -1,0 +1,440 @@
+#!/usr/bin/env python3
+
+# Start like this:
+#   cd ~/f-w/hacktrack
+#   source env/bin/activate
+#   ./deskdrag
+
+
+# Change desktops by 3-fingers horizontal drag
+
+import os
+
+#import itertools
+from itertools import chain
+
+# see https://python-evdev.readthedocs.io/en/latest/usage.html
+import evdev
+
+from xdo import Xdo
+xdo = Xdo()
+
+import glob
+
+# Find your Apple Magic Trackpad 2 among event sources.
+# Path in by-id is a symling to e.g. /dev/input/event19
+# Use command 'evtest' to see what you have.
+def find_trackpad():
+    paths = glob.glob("/dev/input/by-id/*_Magic_Trackpad_2_*-event-mouse")
+    if len(paths) == 0:
+        raise SystemExit
+    return paths[0]
+
+
+
+
+
+
+# Generator of finger positions on the trackpad:
+def trackpad_activity():
+    device = evdev.InputDevice(find_trackpad())
+    print(device)
+    # Similar to:   evtest /dev/input/event19
+    # See: https://www.kernel.org/doc/Documentation/input/multi-touch-protocol.txt
+    # Touch protocol sends event struct element-by-element, we assemble these.
+
+    # ABS_MT_SLOT codes we are interested in:
+    codes = {evdev.ecodes.ABS_MT_TRACKING_ID: "TRACKING_ID",
+             evdev.ecodes.ABS_MT_POSITION_X: "X",
+             evdev.ecodes.ABS_MT_POSITION_Y: "Y",
+             evdev.ecodes.ABS_MT_PRESSURE: "PRESSURE",
+             evdev.ecodes.ABS_MT_TOUCH_MAJOR: "TOUCH_MAJOR",
+             evdev.ecodes.ABS_MT_TOUCH_MINOR: "TOUCH_MINOR"
+             }
+    # tracked fingers:
+    slots = {x:{'TRACKING_ID':-1} for x in range(1, 12)}
+    SLOT = 1 # this default should never be used
+
+    for event in device.read_loop():
+        if event.type == evdev.ecodes.EV_ABS:
+            if event.code == evdev.ecodes.ABS_MT_SLOT:
+                SLOT = event.value
+            if event.code in codes:
+                slots[SLOT][codes[event.code]] = event.value
+        if event.type == evdev.ecodes.EV_SYN:
+            active_slots = {s:v for s, v in slots.items() if v['TRACKING_ID'] != -1}
+            yield active_slots
+
+
+
+event_eaters = [] # parallel event processing streams
+# decorator marking event eater functions:
+def event_eater(func):
+    event_eaters.append(func())
+    return None # we called it above and nobody else will
+
+##################### EXAMPLE EVENT CONSUMER ########################
+
+# to switch the event consumer off, comment out the decorator
+
+#@event_eater
+def eater():
+    while True:
+        x = (yield)
+        print(x)
+
+##################### REPOSITION MOUSE ABSOLUTELY BY TAP ########################
+
+desktop_range = ((0, 3840), (0, 2160)) # x, y
+trackpad_range = ((-3678, 3934), (-2478, 2587)) # x, y intervals
+
+# remap 1 dimension
+def remap_x(src_range, dst_range, x):
+    src_min, src_max = src_range
+    dst_min, dst_max = dst_range
+    src_size = src_max-src_min
+    dst_size = dst_max-dst_min
+    magnify = dst_size/src_size
+    return (x-src_min)*magnify+dst_min
+
+# remap in 2 dimensions
+def remap_xy(src_range, dst_range, xy):
+    src_range_x, src_range_y = src_range
+    dst_range_x, dst_range_y = dst_range
+    x, y = xy
+    return remap_x(src_range_x, dst_range_x, x), remap_x(src_range_y, dst_range_y, y)
+
+#@event_eater
+def abs_pos_mouse_by_tap():
+    # Is possible tap just happening?
+    in_tap = False
+    in_tap_cnt = 0 # how long in tap, or really big number if tap spoiled by more fingers
+    tap_size = 100 # max x or y displacement during Tap
+    while True:
+        active_slots = (yield)
+        finger_count = len(active_slots)
+        if finger_count == 1:
+            in_tap_cnt += 1 # count length of the tap, in SYN trackpad events
+            v,*_ = active_slots.values()
+            x, y = v["X"], v["Y"]
+            press = v["PRESSURE"]
+            if in_tap_cnt == 1:
+                min_x = max_x = x
+                min_y = max_y = y
+                max_press = press
+            else:
+                if x<min_x:
+                    min_x = x
+                elif x>max_x:
+                    max_x = x
+                if y<min_y:
+                    min_y = y
+                elif y>max_y:
+                    max_y = y
+                if press>max_press:
+                    max_press = press
+        elif finger_count > 1:
+            in_tap_cnt = 10000 # cancel any to-be-tap (will be considered too long)
+        else: # finger_count == 0
+            if in_tap_cnt < 50:
+                if max_x-min_x<tap_size and max_y-min_y<tap_size and max_press>=20:
+                    print(f"Tap! {max_press}")
+                    x = (min_x+max_x)/2  # rather perfectionist, just min_x would do...
+                    y = (min_y+max_y)/2
+                    x, y = remap_xy(trackpad_range, desktop_range, (x, y))
+                    print((int(x), int(y)))
+                    xdo.move_mouse(int(x), int(y))
+            in_tap_cnt = 0
+
+
+##################### MOVE WINDOW BY 4 FINGERS, RESIZE BY 5 ########################
+
+# Compute average x, y for current finger touches
+def average_position( active_slots ):
+    sx, sy = 0, 0
+    for s, v in active_slots.items():
+        sx += v["X"]
+        sy += v["Y"]
+    n = len( active_slots )
+    x, y = sx/n, sy/n
+    return x, y
+
+# Compute x and y five fingers spread for resizing purposes
+def xx_yy_spread( active_slots ):
+    gen = ((v["X"], v["Y"]) for v in active_slots.values())
+    x, y = next(gen)
+    x_min = x_max = x
+    y_min = y_max = y
+    for x, y in gen:
+        if x < x_min:
+            x_min = x
+        elif x > x_max:
+            x_max = x
+        if y < y_min:
+            y_min = y
+        elif y > y_max:
+            y_max = y
+    return x_max-x_min, y_max-y_min
+
+# Generator returning True only once per n
+def sometimes( n ):
+    while True:
+        for _ in range(n-1):
+            yield False
+        yield True
+
+# Let filtered value follow value_now in a bit conservative manner
+def filter_trembling(old_filtered, value_now, alpha_far=0.9, hysteresis=30, alpha_near=1):
+    if abs(old_filtered-value_now) > hysteresis: # increase this if your hand trembles more than mine :)
+        alpha = alpha_far # how much of old value we keep, fast far approach
+    else:
+        alpha = alpha_near # how much of old value we keep, final approach
+        # value 1 means hard hysteresis, which actually works best because char-based
+        # windows could still wobble around the char-size quantization boundary
+    new_filtered = old_filtered*alpha + value_now*(1-alpha)
+    return new_filtered
+
+
+@event_eater
+def four_five_finger_win_geometry():
+    # Are we just dragging window to a new position (using 4 fingers)?
+    dragging = False
+    # Are we just resizing window (using 5 fingers)?
+    resizing = False
+    # auto-detected jupms of unknown windows:
+    detected_jumps = {}
+
+    while True:
+        active_slots = (yield)
+        finger_count = len(active_slots)
+        #print(finger_count)
+        if finger_count == 4:
+             #print(active_slots)
+             x, y = average_position( active_slots )
+             #print((x, y))
+             if not dragging:
+                 mouse_start_pos = xdo.get_mouse_location()
+                 mouse_start_x, mouse_start_y = mouse_start_pos.x, mouse_start_pos.y
+                 #print(mouse_start_pos)
+                 #print((mouse_start_x, mouse_start_y))
+
+                 start_x, start_y = x, y
+                 filtered_x, filtered_y = x, y
+                 win = xdo.get_window_at_mouse()
+                 name = xdo.get_window_name(win)
+                 if str(name).startswith("b'Desktop'"):
+                     # we are technically able to move this but do not want to
+                     print("Avoided Desktop drag")
+                     continue
+                 try:
+                     # this sometimes failes for unknown reason, so we do it in try
+                     loc = xdo.get_window_location(win)
+                 except:
+                     print("Failed to get window location")
+                     break
+                 #print(loc)
+                 #print(name)
+                 win_orig_x, win_orig_y = loc.x, loc.y
+                 print("Started window drag")
+
+                 ############ TERRIBLE WORKAROUND FOR WINDOW POSITIONING DISCREPANCY ############
+                 if str(name).startswith("b'emacs"):
+                     jump_x, jump_y = 10, 58 # known jumper
+                 elif str(name).startswith("b'T - "):
+                     jump_x, jump_y = 10, 58 # another known jumper
+                 elif str(name).endswith("Chromium'"):
+                     jump_x, jump_y = 0, 0 # known non-jumper
+                 elif name in detected_jumps:
+                     jump_x, jump_y = detected_jumps[name] # we jump-tested this window before
+                 else:
+                     # jump test - 'move' window exactly where it already is:
+                     xdo.move_window(win, win_orig_x, win_orig_y)
+                     _ = xdo.get_focused_window_sane() # used just to flush the above move
+                     loc = xdo.get_window_location(win)
+                     win_jumped_x, win_jumped_y = loc.x, loc.y
+                     jump_x, jump_y = win_jumped_x-win_orig_x, win_jumped_y-win_orig_y
+                     print(f"jump {(jump_x, jump_y)} detected for window {name}")
+                     detected_jumps[name] = jump_x, jump_y
+                 # undo any jump:
+                 win_orig_x -= jump_x
+                 win_orig_y -= jump_y
+                 ############ END OF TERRIBLE WORKAROUND FOR WINDOW POSITIONING DISCREPANCY ############
+
+                 dragging = True
+                 resizing = False
+             else:
+                 # move window
+                 #print("moving")
+                 move_filter = {'hysteresis':7, 'alpha_far':0.5, 'alpha_near':0.98}
+                 filtered_x = filter_trembling(filtered_x, x, **move_filter)
+                 filtered_y = filter_trembling(filtered_y, y, **move_filter)
+
+                 delta_x, delta_y = filtered_x-start_x, filtered_y-start_y # how far we moved from start of drag
+                 xdo.move_mouse(int(mouse_start_x+delta_x), int(mouse_start_y+delta_y)) # move mouse cursor
+
+                 win_x, win_y = int(win_orig_x+delta_x), int(win_orig_y+delta_y)
+                 xdo.move_window(win, win_x, win_y)
+                 _ = xdo.get_focused_window_sane() # used just to flush the above move
+        else:
+            if dragging:
+                 print("End of window drag")
+                 dragging = False
+
+
+
+
+        if finger_count == 5:
+            #print("Resizing")
+            xx, yy = xx_yy_spread( active_slots )
+            #print((xx, yy))
+
+            if not resizing:
+                start_xx, start_yy = xx, yy
+                filtered_xx, filtered_yy = xx, yy # xx, yy with fast trembling filtered out
+                win = xdo.get_window_at_mouse()
+                name = xdo.get_window_name(win)
+                if str(name).startswith("b'Desktop'"):
+                    # we are technically able to change this but do not want to
+                    print("Avoided Desktop resize")
+                    continue
+                print("Started window resize")
+                siz = xdo.get_window_size(win)
+                #print((siz.width, siz.height))
+                win_orig_w, win_orig_h = siz.width, siz.height
+
+                # For pointer-keeping control, we also need the window and mouse position:
+                loc = xdo.get_window_location(win)
+                win_orig_x, win_orig_y = loc.x, loc.y
+
+                resizing = True
+                dragging = False
+                moderate = sometimes(5) # how often we really do window resize
+            else:
+                # resize window
+                #print("resize now")
+                filtered_xx = filter_trembling(filtered_xx, xx)
+                filtered_yy = filter_trembling(filtered_yy, yy)
+
+                if next(moderate):
+                    #print("REALLY resize now")
+
+                    delta_xx, delta_yy = filtered_xx-start_xx, filtered_yy-start_yy
+                    resize_sensitivity = 0.5
+                    delta_xx *= resize_sensitivity
+                    delta_yy *= resize_sensitivity
+                    w, h = int(win_orig_w+delta_xx), int(win_orig_h+delta_yy)
+
+
+                    # Mostly try to leave the pointer where it is BUT if
+                    # it would be left out of the window, move it in now.
+                    # (Very draft but better than nothing)
+                    mouse_pos = xdo.get_mouse_location()
+                    mouse_x, mouse_y = mouse_pos.x, mouse_pos.y
+
+                    move_it = False
+                    mouse_x_max = win_orig_x + w - 100
+                    if mouse_x > mouse_x_max:
+                        mouse_x = mouse_x_max
+                        move_it = True
+                        mouse_x_min = win_orig_x + 200
+                        if mouse_x < mouse_x_min:
+                            mouse_x = mouse_x_min
+
+                    mouse_y_max = win_orig_y + h - 100
+                    if mouse_y > mouse_y_max:
+                        mouse_y = mouse_y_max
+                        move_it = True
+                        mouse_y_min = win_orig_y + 30
+                        if mouse_y < mouse_y_min:
+                            mouse_y = mouse_y_min
+
+                    if move_it:
+                        xdo.move_mouse(int(mouse_x), int(mouse_y))
+
+
+                    xdo.set_window_size(win, w, h)
+                    _ = xdo.get_focused_window_sane() # used just to flush the above move
+
+
+        else:
+            if resizing:
+                print("End of window resize")
+                resizing = False
+
+####################################################################################
+
+# This is what I previously had in /etc/libinput-gestures.conf
+# Move to another desktop:
+#gesture swipe left 3	xdotool key alt+ctrl+Right
+#gesture swipe right 3	xdotool key alt+ctrl+Left
+# Show/hide desktops map:
+#gesture swipe up 3	xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 0
+#gesture swipe down 3	xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 2
+
+@event_eater
+def three_finger_desktop_drag():
+
+    def reset():
+        nonlocal dragging, desks_shown, three_finger_time
+        dragging = False  # Are we just dragging to another desktop (using 3 fingers)?
+        desks_shown = False
+        three_finger_time = 0
+
+    reset()
+
+    def desk_show():
+        os.system("xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 0")
+    def desk_hide(): # still shown if mouse at lower screen edge
+        os.system("xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 2")
+    def desk_left(): # like swipe-left on Mac (windows move left, our view moves right)
+        os.system("xdotool key alt+ctrl+Right")
+    def desk_right():
+        os.system("xdotool key alt+ctrl+Left")
+
+    while True:
+        active_slots = (yield)
+        finger_count = len(active_slots)
+        #print(finger_count)
+        if finger_count == 3:
+             x, y = average_position( active_slots )
+             if not dragging:
+                 print("started desktop drag")
+                 start_x, start_y = x, y
+                 dragging = True
+             else:
+                 # action happens here
+                 dif_x = start_x - x
+                 dif_y = start_y - y
+                 three_finger_time += 1
+                 if not desks_shown and (
+                         abs(dif_x)>100 or # show if horizontal drag already happens
+                         abs(dif_y)>100 or # or just show on any vertical drag
+                         three_finger_time>45): # or after delay longer than paste or 4-finger onset
+                     # show desktops:
+                     desk_show()
+                     desks_shown = True
+                 if dif_x<-500:
+                     desk_right()
+                     start_x, start_y = x, y
+                 elif dif_x>500:
+                     desk_left()
+                     start_x, start_y = x, y
+        else:
+            if dragging:
+                # Do one-desktop move if user did fast left/right swipe:
+
+                print(f"end of desktop drag after {three_finger_time}")
+                desk_hide()
+                reset()
+
+
+
+####################################################################################
+
+# Now send every "fingers event" to all event eaters:
+for x in chain([None], trackpad_activity()):
+    for e in event_eaters:
+        e.send(x)
+
+
+
