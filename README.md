@@ -10,3 +10,15 @@ Being spoiled by window management on both Linux and Mac, I want all the good th
 * **Move windows by four fingers.** Just as easily as you scroll by 2 fingers and change desktop by 3, you can move window by 4.
 * **Resize windows by five fingers.** Spread/shrink 5 fingers to change window's size and shape. It is amazingly easy and you can combine it with the 4 finger move - position window, add one more finger to resize it slightly, continue positioning...
 * **Change desktop with three fingers.** You know this from Mac. But here you can tune it. What about longer swipe to go over several desktops instead of repeated swipes?
+* **Whatever hands can do and brain wants.** Having direct access to all the data from your trackpad, slightly processed to an easy-to-work-with form, and having a modular structure of hacktrack, you can add more features on a few python lines.
+
+## Instalation
+* Install python
+* ```pip install xdo```
+* ```pip install evdev```
+* make sure hacktrack is run when you log in to your GUI
+
+For desktop changes, you will likely need to modify commands used in the hacktrack source according to your desktop setup.
+
+## TODO
+This is an alpha stage project. Some more automatic installation is certainly due.
