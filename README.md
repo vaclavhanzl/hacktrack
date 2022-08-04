@@ -25,3 +25,18 @@ This is an alpha stage project. Some more automatic installation is certainly du
 
 ## Comparison to other projects
 I tried whatever I found before writing the tool myself, of course. Rather surprisingly, the key decision which allowed me to make this code simple and ergonomic was to NOT use library like libinput which is there to help me. Instead, I get raw trackpad events directly from the kernel. Sounds scary but is actually very easy. The problem with the (great) libinput is that it does only the things it can do well. It is not a place for experiments. If you want to be on the edge with crazy ideas, you need your experimental code PLUS a hacked version of libinput. This forked hacked libinput gets quickly unmaintained and it clashes with the libinput in your system. On the other hand, working in parallel with libinput (and anything like libinput-gestures on top of it) is really hassle free.
+
+## Four fingers move
+Four fingers can move in many ways. The tool just computes "center of gravity" (average position) of all four fingers and as this average point moves, the window moves. Use your creativity to find how to use it with your hands. For example:
+* use 4 fingers moving in unisono (the obvious way)
+* put 3 fingers steady on the trackpad and add moving thumb. The window moves 4 times slower this way.
+* put 3 fingers of one hand steady and move window with one finger of the other hand. Or slightly roll this touching finger for ultra-precise move.
+
+## Five fingers resize
+Just spread/shrink 5 fingers touching tha trackpad and you will certainly figure it out. But for the curious, the algorithm looks for a bounding rectangle which contains your touch points. Relative changes of this rectangle's width and height than change width and height of the window. Again, you can get creative in many ways:
+* just put all 5 fingers of one hand relaxed on the trackpad and then reshape
+* put thumb in one corner of the bounding box and remaining 4 fingers in the diagonally oposite corner, then move these two corners
+* put 4 fingers of one hand in a vertical or horizontal line. Add one finger of the other hand at certain distance from this line and move it. This way you can easily change just one dimension of the window.
+* combine move and resize - add thumb or one finger of the other hand to switch from move to resize, than release it again and continue move
+
+All this is actually fun to experiment with, you will certainly find a way you like.
