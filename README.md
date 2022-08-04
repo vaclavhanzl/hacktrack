@@ -33,10 +33,38 @@ Four fingers can move in many ways. The tool just computes "center of gravity" (
 * put 3 fingers of one hand steady and move window with one finger of the other hand. Or slightly roll this touching finger for ultra-precise move.
 
 ## Five fingers resize
-Just spread/shrink 5 fingers touching tha trackpad and you will certainly figure it out. But for the curious, the algorithm looks for a bounding rectangle which contains your touch points. Relative changes of this rectangle's width and height then change width and height of the window. Again, you can get creative in many ways:
+Just spread/shrink 5 fingers touching the trackpad and you will certainly figure it out. But for the curious, the algorithm looks for a bounding rectangle which contains your touch points. Relative changes of this rectangle's width and height then change width and height of the window. Again, you can get creative in many ways:
 * just put all 5 fingers of one hand relaxed on the trackpad and then reshape
 * put thumb in one corner of the bounding box and remaining 4 fingers in the diagonally oposite corner, then move these two corners
 * put 4 fingers of one hand in a vertical or horizontal line. Add one finger of the other hand at certain distance from this line and move it. This way you can easily change just one dimension of the window.
 * combine move and resize - add thumb or one finger of the other hand to switch from move to resize, than release it again and continue move
 
 All this is actually fun to experiment with, you will certainly find a way you like.
+
+## Three fingers desktop change
+This one is actually just boring port of functionality I like on Mac. You can also get it easily with libinput-gestures so you may want to just disable it in hacktrack by changing this:
+````python
+@event_eater
+def three_finger_desktop_drag():
+````
+into this (comment out the decorator):
+````python
+#@event_eater
+def three_finger_desktop_drag():
+````
+If you want to use it, you need to match your desktop layout and the source code. It is no rocket science. My desktop is Xfce4 and I have a row of virtual desktops in a panel which appears when mouse pointer is at the lower edge of my display. When the pointer is elsewhere, the panel autohides. This part of the hacktrack source code forms the interface to my desktops:
+```python
+    def desk_show():
+        os.system("xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 0")
+    def desk_hide(): # still shown if mouse at lower screen edge
+        os.system("xfconf-query -c xfce4-panel -p /panels/panel-2/autohide-behavior -s 2")
+    def desk_left(): # like swipe-left on Mac (windows move left, our view moves right)
+        os.system("xdotool key alt+ctrl+Right")
+    def desk_right():
+        os.system("xdotool key alt+ctrl+Left")
+```
+* it changes the autohide property of ```panel-2``` to show/hide it. Your pannel can have different number.
+* it uses ```alt+ctrl+Right``` and  ```alt+ctrl+Left``` to change desktops. You may need some other keys.
+
+Also, you may use other commands than ```xfconf-query``` and ```xdotool``` to send instructions to your desktop.
+
