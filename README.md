@@ -13,7 +13,7 @@ Being spoiled by window management on both Linux and Mac, I want all the good th
 * **Whatever hands can do and brain wants.** Having direct access to all the data from your trackpad, slightly processed to an easy-to-work-with form, and having a modular structure of hacktrack, you can add more features on a few python lines.
 
 ## Instalation
-* Install python
+* Install python3
 * ```pip3 install python-libxdo```
 * ```pip3 install evdev```
 * make sure hacktrack is run when you log in to your GUI
