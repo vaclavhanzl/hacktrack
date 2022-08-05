@@ -148,7 +148,7 @@ Use this:
 ```
 group
 ```
-and this
+to check your groups and this:
 ```
 sudo gpasswd -a YOUR_LOGIN_NAME input
 ```
