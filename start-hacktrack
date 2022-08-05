@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Activate python virtual environment and start hacktrack
+
+cd ${0%/*}  # go to directory where this script lives
+
+. env/bin/activate  # activate python virtual environment
+
+./hacktrack  # run hacktrack window management tool
+
+echo Sleeping 1 hour to let you see any exit messages...
+sleep 3600
