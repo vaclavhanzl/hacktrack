@@ -153,6 +153,12 @@ to check your groups and this:
 sudo gpasswd -a YOUR_LOGIN_NAME input
 ```
 to add you to the group if needed.
+
+For a lot more of similar wisdom, you may have look at [libinput-gestures](https://github.com/bulletmark/libinput-gestures)
+or even install it. It has similar dependencies so if you make it to work for you, quite likely your computer will be also ready
+for hacktrack by then.
+
+
 ## Contact
 If you want to tell me that you love this or hate this, message @vaclav512 on Twitter.
 
