@@ -14,11 +14,52 @@ Being spoiled by window management on both Linux and Mac, I want all the good th
 
 ## Instalation
 * Install python
-* ```pip install xdo```
-* ```pip install evdev```
+* ```pip3 install python-libxdo```
+* ```pip3 install evdev```
 * make sure hacktrack is run when you log in to your GUI
 
 For desktop changes, you will likely need to modify commands used in the hacktrack source according to your desktop setup.
+
+## Instalation in more detail
+First, get the hacktrack source code:
+```
+git clone https://github.com/vaclavhanzl/hacktrack.git
+```
+(If you happen not to have git yet, install it with something like ```sudo apt-get install git``` or ```sudo yum install git```.)
+
+Then go to the cloned directory and try to run hacktrack:
+```
+cd hacktrack
+./hacktrack
+```
+It will likely complain that something is missing. If python3 is missing, install it with something like:
+```
+sudo apt-get install python3
+```
+or google how to get python 3 on your system.
+
+Quite likely, python libraries **xdo** and **evdev** will be missing. You can install these with
+```
+pip3 install python-libxdo evdev
+```
+or alternatively you can install them to virtual environment just for hacktrack:
+```
+pip3 install virtualenv
+python3 -m virtualenv env
+source env/bin/activate
+pip3 install python-libxdo evdev
+```
+To start hacktrack with the virtual environment activated, use this:
+```
+./start-hacktrack
+```
+and if it works fine for you, make your desktop environment to start it automatically for you after login.
+For example, with Xfce4, you may do it here:
+Applications/Settings/Settings Manager,  System,  Session and Startup. Use full path to the script,
+something like ```/home/......./hacktrack/start-hacktrack```.
+
+
+
 
 ## TODO
 This is an alpha stage project. Some more automatic installation is certainly due.
