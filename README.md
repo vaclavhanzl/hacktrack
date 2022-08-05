@@ -100,3 +100,7 @@ Your window environment may contain elements which technically could be moved/re
        continue
 ```
 and it works good enough for me but can be different for you.
+
+## Contact
+If you want to tell me that you love this or hate this, message @vaclav512 on Twitter.
+
