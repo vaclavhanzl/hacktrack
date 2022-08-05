@@ -146,7 +146,7 @@ and it works good enough for me but can be different for you.
 You may need to add yourself to the **input** group to be able to read the touchpad device.
 Use this:
 ```
-group
+groups
 ```
 to check your groups and this:
 ```
