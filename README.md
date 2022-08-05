@@ -159,6 +159,7 @@ or even install it. It has similar dependencies so if you make it to work for yo
 for hacktrack by then.
 
 
-## Contact
-If you want to tell me that you love this or hate this, message @vaclav512 on Twitter.
+## Discussions and Contact
+You can discuss hacktrack in public here in [Discussions](https://github.com/vaclavhanzl/hacktrack/discussions).
+If you want to tell me more personally that you love this or hate this, message @vaclav512 on Twitter.
 
