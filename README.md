@@ -142,6 +142,17 @@ Your window environment may contain elements which technically could be moved/re
 ```
 and it works good enough for me but can be different for you.
 
+## Troubleshooting
+You may need to add yourself to the **input** group to be able to read the touchpad device.
+Use this:
+```
+group
+```
+and this
+```
+sudo gpasswd -a YOUR_LOGIN_NAME input
+```
+to add you to the group if needed.
 ## Contact
 If you want to tell me that you love this or hate this, message @vaclav512 on Twitter.
 
