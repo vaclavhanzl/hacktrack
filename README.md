@@ -46,7 +46,7 @@ or alternatively you can install them to virtual environment just for hacktrack:
 ```
 pip3 install virtualenv
 python3 -m virtualenv env
-source env/bin/activate
+source env/local/bin/activate
 pip3 install python-libxdo evdev
 ```
 To start hacktrack with the virtual environment activated, use this:
@@ -142,6 +142,24 @@ Your window environment may contain elements which technically could be moved/re
 ```
 and it works good enough for me but can be different for you.
 
-## Contact
-If you want to tell me that you love this or hate this, message @vaclav512 on Twitter.
+## Troubleshooting
+You may need to add yourself to the **input** group to be able to read the touchpad device.
+Use this:
+```
+groups
+```
+to check your groups and this:
+```
+sudo gpasswd -a YOUR_LOGIN_NAME input
+```
+to add you to the group if needed.
+
+For a lot more of similar wisdom, you may have look at [libinput-gestures](https://github.com/bulletmark/libinput-gestures)
+or even install it. It has similar dependencies so if you make it to work for you, quite likely your computer will be also ready
+for hacktrack by then.
+
+
+## Discussions and Contact
+You can discuss hacktrack in public here in [Discussions](https://github.com/vaclavhanzl/hacktrack/discussions).
+If you want to tell me more personally that you love this or hate this, message @vaclav512 on Twitter.
 
