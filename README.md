@@ -46,7 +46,7 @@ or alternatively you can install them to virtual environment just for hacktrack:
 ```
 pip3 install virtualenv
 python3 -m virtualenv env
-source env/bin/activate
+source env/local/bin/activate
 pip3 install python-libxdo evdev
 ```
 To start hacktrack with the virtual environment activated, use this:
