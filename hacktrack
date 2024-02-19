@@ -250,9 +250,7 @@ def four_five_finger_win_geometry():
                      # jump test - 'move' window exactly where it already is:
                      xdo.move_window(win, win_orig_x, win_orig_y)
                      _ = xdo.get_focused_window_sane() # used just to flush the above move
-                     print("xxx2")
                      loc = xdo.get_window_location(win)
-                     print("xxx3")
                      win_jumped_x, win_jumped_y = loc.x, loc.y
                      jump_x, jump_y = win_jumped_x-win_orig_x, win_jumped_y-win_orig_y
                      print(f"jump {(jump_x, jump_y)} detected for window {name}")
@@ -261,8 +259,6 @@ def four_five_finger_win_geometry():
                  win_orig_x -= jump_x
                  win_orig_y -= jump_y
                  ############ END OF TERRIBLE WORKAROUND FOR WINDOW POSITIONING DISCREPANCY ############
-
-                 print("xxx1")
 
                  dragging = True
                  resizing = False
@@ -274,12 +270,9 @@ def four_five_finger_win_geometry():
                  filtered_y = filter_trembling(filtered_y, y, **move_filter)
 
                  delta_x, delta_y = filtered_x-start_x, filtered_y-start_y # how far we moved from start of drag
-                 print("xxx4")
                  xdo.move_mouse(int(mouse_start_x+delta_x), int(mouse_start_y+delta_y)) # move mouse cursor
-                 print("xxx5")
                  win_x, win_y = int(win_orig_x+delta_x), int(win_orig_y+delta_y)
                  xdo.move_window(win, win_x, win_y)
-                 print("xxx6")
                  _ = xdo.get_focused_window_sane() # used just to flush the above move
         else:
             if dragging:
