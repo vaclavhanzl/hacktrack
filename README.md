@@ -160,5 +160,5 @@ for hacktrack by then.
 
 ## Discussions and Contact
 You can discuss hacktrack in public here in [Discussions](https://github.com/vaclavhanzl/hacktrack/discussions).
-If you want to tell me more personally that you love this or hate this, message @vaclav512 on Twitter.
+If you want to tell me more personally that you love this or hate this, message `@vaclavh@sigmoid.social` on Mastodon.
 
