@@ -137,18 +137,7 @@ Your window environment may contain elements which technically could be moved/re
 ```
 and it works good enough for me but can be different for you.
 
-## Troubleshooting
-You may need to add yourself to the **input** group to be able to read the touchpad device.
-Use this:
-```
-groups
-```
-to check your groups and this:
-```
-sudo gpasswd -a YOUR_LOGIN_NAME input
-```
-to add you to the group if needed.
-
+## More Troubleshooting
 For a lot more of similar wisdom, you may have look at [libinput-gestures](https://github.com/bulletmark/libinput-gestures)
 or even install it. It has similar dependencies so if you make it to work for you, quite likely your computer will be also ready
 for hacktrack by then.
