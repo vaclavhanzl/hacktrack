@@ -29,7 +29,7 @@ Verify that everything works:
 ```
 env/bin/python3 hacktrack
 ```
-Than make sure `start hacktrack` is run when you log in to your GUI. For example, with Xfce4, you may do it here:
+Than make sure `start-hacktrack` is run when you log in to your GUI. For example, with Xfce4, you may do it here:
 Applications/Settings/Settings Manager,  System,  Session and Startup. Use full path to the script,
 something like ```/home/......./hacktrack/start-hacktrack```.
 
@@ -57,7 +57,23 @@ To test hacktrack, go to the cloned directory and try to run it directly from th
 cd hacktrack
 env/bin/python3 hacktrack
 ```
-Look for any errors you get.
+Look for any errors you get. If you see any import problems, verify installation of libraries by running:
+```
+env/bin/python3
+```
+and at the python command prompt, try:
+```
+import evdev
+from xdo import Xdo
+```
+Both should work without any error messages. If there are some complaints, make sure you did BOTH the `apt-get` part of installation AND the `pip3 install` one.
+The `Xdo` python library needs the `apt` package `xdotool`.
+
+If you see something like:
+```
+PermissionError: [Errno 13] Permission denied: '/dev/input/by-id/usb-Apple_Inc._Magic_Trackpad_2_CC28192005HJ2Y1AM-if01-event-mouse'
+```
+you likely need the `input` group permissions - see above and do not forget to log out and in.
 
 
 ## TODO
