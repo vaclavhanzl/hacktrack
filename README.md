@@ -25,7 +25,11 @@ cd hacktrack
 python3 -m venv env
 env/bin/pip3 install python-libxdo evdev
 ```
-Make sure `start hacktrack` is run when you log in to your GUI. For example, with Xfce4, you may do it here:
+Verify that everything works:
+```
+env/bin/python3 hacktrack
+```
+Than make sure `start hacktrack` is run when you log in to your GUI. For example, with Xfce4, you may do it here:
 Applications/Settings/Settings Manager,  System,  Session and Startup. Use full path to the script,
 something like ```/home/......./hacktrack/start-hacktrack```.
 
