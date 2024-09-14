@@ -36,7 +36,7 @@ something like ```/home/......./hacktrack/start-hacktrack```.
 
 For desktop changes, you will likely need to modify commands used in the hacktrack source according to your desktop setup.
 
-## Instalation in more detail and Troubleshooting
+## Troubleshooting
 You can alternatively clone the code using the `https` variant:
 ```
 git clone https://github.com/vaclavhanzl/hacktrack.git
