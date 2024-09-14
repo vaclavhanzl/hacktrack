@@ -13,51 +13,47 @@ Being spoiled by window management on both Linux and Mac, I want all the good th
 * **Whatever hands can do and brain wants.** Having direct access to all the data from your trackpad, slightly processed to an easy-to-work-with form, and having a modular structure of hacktrack, you can add more features on a few python lines.
 
 ## Instalation
-* Install python3
-* ```pip3 install python-libxdo```
-* ```pip3 install evdev```
-* make sure hacktrack is run when you log in to your GUI
-
-For desktop changes, you will likely need to modify commands used in the hacktrack source according to your desktop setup.
-
-## Instalation in more detail
-First, get the hacktrack source code:
+You need python3 with libraries `evdev` and `python-libxdo`. You also need to be in the `input` group. And you need to make sure `hacktrack` is run when you log in to your GUI. Here are the commands for Debian:
 ```
-git clone https://github.com/vaclavhanzl/hacktrack.git
+sudo apt-get install python3.12-venv python3-dev xdotool git
+sudo gpasswd -a YOUR-OWN-USERNAME input
 ```
-(If you happen not to have git yet, install it with something like ```sudo apt-get install git``` or ```sudo yum install git```.)
-
-Then go to the cloned directory and try to run hacktrack:
+Log out and log back in.
 ```
+git clone git@github.com:vaclavhanzl/hacktrack.git
 cd hacktrack
-./hacktrack
-```
-It will likely complain that something is missing. If python3 is missing, install it with something like:
-```
-sudo apt-get install python3
-```
-or google how to get python 3 on your system.
-
-Quite likely, python libraries **xdo** and **evdev** will be missing. You can install these with
-```
-pip3 install python-libxdo evdev
-```
-or alternatively you can install them to virtual environment just for hacktrack:
-```
-sudo apt-get install python3.11-venv
 python3 -m venv env
 env/bin/pip3 install python-libxdo evdev
 ```
-To start hacktrack with the virtual environment activated, use this:
-```
-./start-hacktrack
-```
-and if it works fine for you, make your desktop environment to start it automatically for you after login.
-For example, with Xfce4, you may do it here:
+Make sure `start hacktrack` is run when you log in to your GUI. For example, with Xfce4, you may do it here:
 Applications/Settings/Settings Manager,  System,  Session and Startup. Use full path to the script,
 something like ```/home/......./hacktrack/start-hacktrack```.
 
 
+For desktop changes, you will likely need to modify commands used in the hacktrack source according to your desktop setup.
+
+## Instalation in more detail and Troubleshooting
+You can alternatively clone the code using the `https` variant:
+```
+git clone https://github.com/vaclavhanzl/hacktrack.git
+```
+To verify that you are in the `input` group, do:
+```
+groups
+```
+and you should have a list containing this group, e.g.:
+```
+hanzl cdrom floppy sudo audio dip video plugdev netdev bluetooth lpadmin scanner input
+                                                                                 ^^^^^
+```
+If `input` is not there, use the `gpasswd` command mentioned above and **log out** and **log in**.
+
+To test hacktrack, go to the cloned directory and try to run it directly from the command line:
+```
+cd hacktrack
+env/bin/python3 hacktrack
+```
+Look for any errors you get.
 
 
 ## TODO
