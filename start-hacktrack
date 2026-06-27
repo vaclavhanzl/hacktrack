@@ -4,12 +4,10 @@
 
 cd ${0%/*}  # go to directory where this script lives
 
-#. env/local/bin/activate  # activate python virtual environment
-
 mkdir -p ~/tmp/
-#./hacktrack 2>~/tmp/hacktrack_errlog # run hacktrack window management tool
 
-env/bin/python3 hacktrack 2>~/tmp/hacktrack_errlog # run hacktrack window management tool
-
-echo Sleeping 1 hour to let you see any exit messages...
-sleep 3600
+while true; do
+    env/bin/python3 hacktrack 2>~/tmp/hacktrack_errlog # run hacktrack window management tool
+    echo "Hacktrack crashed, will run it again in 5 seconds"
+    sleep 5
+done
